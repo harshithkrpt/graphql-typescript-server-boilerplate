@@ -3,8 +3,12 @@
   "version": "0.0.1",
   "description": "Awesome project developed with TypeORM.",
   "devDependencies": {
+    "@types/express": "^4.17.3",
+    "@types/ioredis": "^4.14.9",
     "@types/jest": "^25.1.4",
+    "@types/node-fetch": "^2.5.5",
     "@types/uuid": "^7.0.2",
+    "@types/yup": "^0.26.33",
     "gql2ts": "^1.10.1",
     "jest": "^25.2.4",
     "nodemon": "^2.0.2",
@@ -13,26 +17,32 @@
     "typescript": "3.8.3"
   },
   "dependencies": {
+    "@gql2ts/from-schema": "^2.0.0-4",
     "@types/bcryptjs": "^2.4.2",
     "bcryptjs": "^2.4.3",
+    "express": "^4.17.1",
     "graphql": "^14.6.0",
     "graphql-import": "^1.0.1",
     "graphql-request": "^1.8.2",
     "graphql-tools": "^4.0.7",
     "graphql-yoga": "^1.18.3",
+    "ioredis": "^4.16.1",
+    "node-fetch": "^2.6.0",
     "pg": "^7.3.0",
     "reflect-metadata": "^0.1.10",
     "tslint": "^6.1.0",
     "tslint-config-prettier": "^1.18.0",
     "typeorm": "0.2.24",
-    "uuid": "^7.0.2"
+    "uuid": "^7.0.2",
+    "yup": "^0.28.3"
   },
   "scripts": {
     "start": "NODE_ENV=development nodemon --exec ts-node --files src/index.ts",
-    "gen-schema-types": "NODE_ENV=test gql2ts src/schema.graphql -o src/types/schema.d.ts",
-    "test": "jest"
+    "gen-schema-types": "ts-node --files src/scripts/create-types.ts",
+    "test": "NODE_ENV=test jest --watch"
   },
   "jest": {
+    "globalSetup": "./src/tests-setup/call-setup.js",
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },

@@ -1,23 +1,21 @@
-import { importSchema } from "graphql-import";
 import { GraphQLServer } from "graphql-yoga";
-import * as path from "path";
-import * as fs from "fs";
-import { GraphQLSchema } from "graphql";
-import { mergeSchemas, makeExecutableSchema } from "graphql-tools";
+
+import { redis } from "./redis";
 
 import { createTypeormConn } from "./utils/create-typeorm-conn";
+import { confirmEmail } from "./routes/confirmed-email";
+import { genSchema } from "./utils/generate-schema";
 
 export const startServer = async (): Promise<any> => {
-  const schemas: GraphQLSchema[] = [];
-  const folders = fs.readdirSync(path.join(__dirname, "./modules"));
-  folders.forEach(folder => {
-    const { resolvers } = require(`./modules/${folder}/resolvers`);
-    const typeDefs = importSchema(
-      path.join(__dirname, `./modules/${folder}/schema.graphql`)
-    );
-    schemas.push(makeExecutableSchema({ resolvers, typeDefs }));
+  const server = new GraphQLServer({
+    schema: genSchema(),
+    context: ({ request }) => ({
+      redis,
+      url: request.protocol + "://" + request.get("host")
+    })
   });
-  const server = new GraphQLServer({ schema: mergeSchemas({ schemas }) });
+
+  server.express.get("/confirm/:id", confirmEmail);
 
   // Database Connection
   await createTypeormConn();
