@@ -32,7 +32,7 @@ export const resolvers: ResolverMap = {
         return accountLockedResponse;
       }
 
-      const valid = await bcrypt.compare(password, user.password);
+      const valid = await bcrypt.compare(password, (user as any).password);
 
       if (!valid) {
         return errorResponse;
