@@ -1,15 +1,16 @@
 import { ResolverMap } from "../../types/graphql-utils";
-import * as bcrypt from "bcryptjs";
+
 import { User } from "../../entity/User";
 import * as yup from "yup";
 import { formatYupError } from "../../utils/format-yup-error";
 import {
   duplicateEmail,
   invalidEmail,
-  passwordNotLongEnough,
   emailNotLongEnough
 } from "./error-messages";
-import { createConfirmEmailLink } from "../../utils/create-confirm-email-link";
+import { registerPasswordValidation } from "../../utils/yup-scheme";
+// import { createConfirmEmailLink } from "../../utils/create-confirm-email-link";
+// import { sendEmail } from "../../utils/send-email";
 
 const schema = yup.object().shape({
   email: yup
@@ -17,10 +18,7 @@ const schema = yup.object().shape({
     .min(3, emailNotLongEnough)
     .max(255)
     .email(invalidEmail),
-  password: yup
-    .string()
-    .min(3, passwordNotLongEnough)
-    .max(255)
+  password: registerPasswordValidation
 });
 
 export const resolvers: ResolverMap = {
@@ -30,8 +28,8 @@ export const resolvers: ResolverMap = {
   Mutation: {
     register: async (
       _,
-      args: GQL.IRegisterOnMutationArguments,
-      { redis, url }
+      args: GQL.IRegisterOnMutationArguments
+      // { redis, url }
     ) => {
       try {
         await schema.validate(args, { abortEarly: false });
@@ -51,14 +49,19 @@ export const resolvers: ResolverMap = {
           }
         ];
       }
-      const hashedPassword = await bcrypt.hash(password, 10);
-      let user = User.create({
-        email,
-        password: hashedPassword
-      });
-      user = await user.save();
 
-      await createConfirmEmailLink(url, user.id, redis);
+      const user = User.create({
+        email,
+        password
+      });
+      await user.save();
+
+      // if (process.env.NODE_ENV !== "test") {
+      //   await sendEmail(
+      //     email,
+      //     await createConfirmEmailLink(url, user.id, redis)
+      //   );
+      // }
 
       return null;
     }

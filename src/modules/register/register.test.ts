@@ -1,5 +1,6 @@
 import { request } from "graphql-request";
 import { User } from "../../entity/User";
+import { Connection } from "typeorm";
 import {
   duplicateEmail,
   emailNotLongEnough,
@@ -20,8 +21,14 @@ mutation {
 }
 `;
 
+let conn: Connection;
+
 beforeAll(async () => {
-  await createTypeormConn();
+  conn = await createTypeormConn();
+});
+
+afterAll(async () => {
+  conn.close();
 });
 
 describe("Register user", () => {
